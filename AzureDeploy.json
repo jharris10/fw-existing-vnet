@@ -332,13 +332,12 @@
                     "version": "[parameters('imageVersion')]"
                 },
                 "osDisk": {
-                    "name": "osdisk",
-                    "vhd": {
-                        "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', parameters('vmName'), '-', variables('imageOffer'), '-', parameters('imageSku'), '.vhd')]"
-                    },
-                    "caching": "ReadWrite",
-                    "createOption": "FromImage"
-                }
+                  "managedDisk": {
+                      "storageAccountType": "Premium_LRS"
+                  },
+                  "caching": "ReadWrite",
+                  "createOption": "FromImage"
+              }
             },
             "networkProfile": {
                 "networkInterfaces": [{
