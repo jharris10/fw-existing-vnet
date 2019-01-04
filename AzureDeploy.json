@@ -3,11 +3,50 @@
   "contentVersion": "1.0.0.13",
   "parameters": {
     "vmName": {
-       "type": "string",
-       "metadata": {
-          "description": "Name of VM-Series FW in the Azure portal"
-       },
-       "defaultValue": "VM-FW1"
+      "type": "string",
+      "metadata": {
+        "description": "Name of VM-Series FW in the Azure portal"
+      },
+      "defaultValue": "VM-FW1"
+    },
+    "BootstrapStorageAccount": {
+      "defaultValue": "",
+      "type": "String",
+      "metadata": {
+        "description": "Storage account hosting the bootstrap files"
+      }
+    },
+    "bootstrapFirewall": {
+      "type": "string",
+      "allowedValues": [
+        "no",
+        "yes"
+      ],
+      "metadata": {
+        "description": "Do you want to bootstrap the firewall?"
+      },
+      "defaultValue": "no"
+    },
+    "StorageAccountAccessKey": {
+      "defaultValue": "",
+      "type": "String",
+      "metadata": {
+        "description": "Authentication key to access the storage account"
+      }
+    },
+    "StorageAccountFileShare": {
+      "defaultValue": "",
+      "type": "String",
+      "metadata": {
+        "description": "The file share in the storage account where the bootstrap files are located"
+      }
+    },
+    "StorageAccountFileShareDirectory": {
+      "defaultValue": "",
+      "type": "String",
+      "metadata": {
+        "description": "The subdirectory hosting the bootstrap files. Only required if hosting multiple bootstrap directories on the same share"
+      }
     },
     "storageAccountName": {
       "type": "string",
@@ -16,72 +55,63 @@
       }
     },
     "storageAccountExistingRG": {
-       "type": "string",
-       "defaultValue" : "",
-       "metadata": {
-          "description": "Storage Accounts Resource Group."
-       }
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Storage Accounts Resource Group."
+      }
     },
     "fwAvSet": {
-       "type": "string",
-       "metadata": {
-          "description": "EXISTING Availability Set name for Firewalls"
-       },
-       "defaultValue": "AS-FW"
+      "type": "string",
+      "metadata": {
+        "description": "EXISTING Availability Set name for Firewalls"
+      },
+      "defaultValue": "AS-FW"
     },
     "vmSize": {
-       "type": "string",
-       "allowedValues": [
-          "Standard_D3",
-          "Standard_D4",
-          "Standard_D3_v2",
-          "Standard_D4_v2",
-          "Standard_A4",
-          "Standard_DS3_v2",
-          "Standard_DS4_v2"
-       ],
-       "metadata": {
-          "description": "Azure VM size for VM-Series"
-       },
-       "defaultValue": "Standard_D3_v2"
+      "type": "string",
+      "allowedValues": [
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_DS5_v2"
+      ],
+      "metadata": {
+        "description": "Azure VM size for VM-Series"
+      },
+      "defaultValue": "Standard_D3_v2"
     },
     "imageVersion": {
-       "type": "string",
-       "allowedValues": [
-          "7.1.1",
-          "latest"
-       ],
-       "metadata": {
-          "description": "PAN OS Version"
-       },
-       "defaultValue": "7.1.1"
+      "type": "string",
+      "allowedValues": [
+        "8.0.0",
+        "8.1.0",
+        "latest"
+      ],
+      "metadata": {
+        "description": "PAN OS Version"
+      },
+      "defaultValue": "latest"
     },
     "imageSku": {
-       "type": "string",
-       "allowedValues": [
-          "byol",
-          "bundle1",
-          "bundle2"
-       ],
-       "metadata": {
-          "description": "Firewall License Model"
-       },
-       "defaultValue": "bundle2"
+      "type": "string",
+      "allowedValues": [
+        "byol",
+        "bundle1",
+        "bundle2"
+      ],
+      "metadata": {
+        "description": "Firewall License Model"
+      },
+      "defaultValue": "bundle2"
     },
-    "virtualNetworkName": { 
+    "virtualNetworkName": {
       "type": "string",
       "metadata": {
         "description": "Name of the EXISTING Virtual Network (VNET)"
       },
       "defaultValue": "fwVNET"
     },
-    "virtualNetworkAddressPrefix": {
-      "type": "string",
-      "defaultValue": "192.168.0.0/16",
-      "metadata": {
-        "description": "EXISTING Virtual network address CIDR"
-      }
-    },
+    
     "virtualNetworkExistingRGName": {
       "type": "string",
       "defaultValue": "",
@@ -112,42 +142,42 @@
     },
     "subnet0Prefix": {
       "type": "string",
-      "defaultValue": "192.168.0.0/24",
+      "defaultValue": "",
       "metadata": {
         "description": "EXISTING Mgmt subnet CIDR"
       }
     },
     "subnet1Prefix": {
       "type": "string",
-      "defaultValue": "192.168.1.0/24",
+      "defaultValue": "",
       "metadata": {
         "description": "EXISTING Untrust subnet CIDR"
       }
     },
     "subnet2Prefix": {
       "type": "string",
-      "defaultValue": "192.168.2.0/24",
+      "defaultValue": "",
       "metadata": {
         "description": "EXISTING Trust subnet CIDR"
       }
     },
     "subnet0StartAddress": {
       "type": "string",
-      "defaultValue": "192.168.0.4",
+      "defaultValue": "",
       "metadata": {
         "description": "Mgmt subnet static address"
       }
     },
     "subnet1StartAddress": {
       "type": "string",
-      "defaultValue": "192.168.1.4",
+      "defaultValue": "",
       "metadata": {
         "description": "Untrust subnet static address"
       }
     },
     "subnet2StartAddress": {
       "type": "string",
-      "defaultValue": "192.168.2.4",
+      "defaultValue": "",
       "metadata": {
         "description": "Trust subnet static address"
       }
@@ -177,12 +207,13 @@
       "metadata": {
         "description": "Name of existing Network Security Group for MGMT FW interface"
       }
-    }  
+    }
   },
   "variables": {
     "apiVersion": "2015-06-15",
     "imagePublisher": "paloaltonetworks",
-    "imageOffer" : "vmseries1",
+    "customDataField": "[concat('storage-account=', parameters('BootstrapStorageAccount'), ',access-key=', parameters('StorageAccountAccessKey'), ',file-share=', parameters('StorageAccountFileShare'),',share-directory=', parameters('StorageAccountFileShareDirectory'))]",
+    "imageOffer": "vmseries1",
     "nicName": "[concat(parameters('vmName'), '-eth')]",
     "vnetID": "[resourceId(parameters('virtualNetworkExistingRGName'),concat('Microsoft.Network','/','virtualNetworks'),parameters('virtualNetworkName'))]",
     "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('subnet0Name'))]",
@@ -195,7 +226,7 @@
         "properties": {
           "addressPrefix": "[parameters('subnet0Prefix')]",
           "networkSecurityGroup": {
-              "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+            "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
           }
         }
       },
@@ -214,7 +245,7 @@
     ],
     "storageAccountId": "[resourceId(parameters('storageAccountExistingRG'),'Microsoft.Storage/StorageAccounts',parameters('storageAccountName'))]"
   },
-  "resources": [         
+  "resources": [
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Network/publicIPAddresses",
@@ -233,8 +264,8 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
       "dependsOn": [
-            "[concat('Microsoft.Network/publicIPAddresses/', parameters('publicIPAddressName'))]"
-        ],
+        "[concat('Microsoft.Network/publicIPAddresses/', parameters('publicIPAddressName'))]"
+      ],
       "properties": {
         "ipConfigurations": [
           {
@@ -243,7 +274,7 @@
               "privateIPAllocationMethod": "Static",
               "privateIPAddress": "[parameters('subnet0StartAddress')]",
               "publicIPAddress": {
-                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddressName'))]"
               },
               "subnet": {
                 "id": "[variables('subnet0Ref')]"
@@ -257,11 +288,10 @@
       "name": "[concat(variables('nicName'), '1')]",
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
-       "dependsOn": [
-            ],
+      "dependsOn": [],
       "apiVersion": "2015-06-15",
       "properties": {
-      "enableIPForwarding": true,
+        "enableIPForwarding": true,
         "ipConfigurations": [
           {
             "name": "ipconfig-untrust",
@@ -296,68 +326,141 @@
           }
         ]
       }
-    }, 
+    },
     {
-        "apiVersion": "[variables('apiVersion')]",
-        "type": "Microsoft.Compute/virtualMachines",
-        "name": "[parameters('vmName')]",
-        "location": "[resourceGroup().location]",
-        "dependsOn": [
-         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '0')]",
-         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '1')]",
-         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '2')]"
+      "apiVersion": "[variables('apiVersion')]",
+      "condition": "[equals(parameters('bootstrapFirewall'),'yes')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('vmName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '0')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '1')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '2')]"
       ],
-        "plan": {
-           "name": "[parameters('imageSku')]",
-           "product": "[variables('imageOffer')]",
-           "publisher": "[variables('imagePublisher')]"
+      "plan": {
+        "name": "[parameters('imageSku')]",
+        "product": "[variables('imageOffer')]",
+        "publisher": "[variables('imagePublisher')]"
+      },
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('fwAvSet'))]"
         },
-        "properties": {
-          "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('fwAvSet'))]"
-                },
-            "hardwareProfile": {
-                "vmSize": "[parameters('vmSize')]"
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]",
+          "customData": "[base64(variables('customDataField'))]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[parameters('imageSku')]",
+            "version": "[parameters('imageVersion')]"
+          },
+          "osDisk": {
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
             },
-            "osProfile": {
-                "computerName": "[parameters('vmName')]",
-                "adminUsername": "[parameters('adminUsername')]",
-                "adminPassword": "[parameters('adminPassword')]"
-            },
-            "storageProfile": {
-                "imageReference": {
-                    "publisher": "[variables('imagePublisher')]",
-                    "offer": "[variables('imageOffer')]",
-                    "sku": "[parameters('imageSku')]",
-                    "version": "[parameters('imageVersion')]"
-                },
-                "osDisk": {
-                  "managedDisk": {
-                      "storageAccountType": "Premium_LRS"
-                  },
-                  "caching": "ReadWrite",
-                  "createOption": "FromImage"
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'0'))]",
+              "properties": {
+                "primary": true
               }
             },
-            "networkProfile": {
-                "networkInterfaces": [{
-                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'0'))]",
-                    "properties": {
-                        "primary": true
-                    }
-                }, {
-                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'1'))]",
-                    "properties": {
-                        "primary": false
-                    }
-                }, {
-                    "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'2'))]",
-                    "properties": {
-                        "primary": false
-                    }
-                }]
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'1'))]",
+              "properties": {
+                "primary": false
+              }
+            },
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'2'))]",
+              "properties": {
+                "primary": false
+              }
             }
+          ]
         }
-    }    
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "condition": "[equals(parameters('bootstrapFirewall'),'no')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('vmName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '0')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '1')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), '2')]"
+      ],
+      "plan": {
+        "name": "[parameters('imageSku')]",
+        "product": "[variables('imageOffer')]",
+        "publisher": "[variables('imagePublisher')]"
+      },
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('fwAvSet'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[parameters('imageSku')]",
+            "version": "[parameters('imageVersion')]"
+          },
+          "osDisk": {
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'0'))]",
+              "properties": {
+                "primary": true
+              }
+            },
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'1'))]",
+              "properties": {
+                "primary": false
+              }
+            },
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'),'2'))]",
+              "properties": {
+                "primary": false
+              }
+            }
+          ]
+        }
+      }
+    }
   ]
 }
