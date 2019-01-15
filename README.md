@@ -19,9 +19,6 @@ FEATURES:
 
 The following Storage Account types are supported:
 
-                    -Standard_LRS
-                    -Standard_GRS
-                    -Standard_RAGRS
                     -Premium_LRS
                     
 The following VMs are supported:
