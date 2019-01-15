@@ -128,13 +128,7 @@
         "description": "EXISTING Subnet for Trust"
       }
     },
-    "vpnSubnetName": {
-        "type": "string",
-        "defaultValue": "VPN",
-        "metadata": {
-          "description": "EXISTING Subnet for Trust"
-        }
-    },
+    
     "Username": {
       "type": "string",
       "metadata": {
@@ -161,11 +155,9 @@
     "subnet0Ref": "[concat(variables('vnetID'),'/subnets/',parameters('managementSubnetName'))]",
     "subnet1Ref": "[concat(variables('vnetID'),'/subnets/',parameters('untrustSubnetName'))]",
     "subnet2Ref": "[concat(variables('vnetID'),'/subnets/',parameters('trustSubnetName'))]",
-    "subnet3Ref": "[concat(variables('vnetID'),'/subnets/',parameters('vpnSubnetName'))]",
     "fwManagementNic": "[concat(parameters('vmName'), 'Management')]",
     "fwUntrustNic": "[concat('INT-',parameters('vmName'), '-Untrust')]",
-    "fwTrustNic": "[concat('INT-',parameters('vmName'), '-Trust')]",
-    "fwVpnNic": "[concat('INT-',parameters('vmName'), '-VPN')]"
+    "fwTrustNic": "[concat('INT-',parameters('vmName'), '-Trust')]"
   },
   "resources": [
     {
@@ -249,26 +241,6 @@
         ]
       }
     },
-    {
-        "name": "[variables('fwVpnNic')]",
-        "type": "Microsoft.Network/networkInterfaces",
-        "location": "[resourceGroup().location]",
-        "apiVersion": "2015-06-15",
-        "properties": {
-          "enableIPForwarding": true,
-          "ipConfigurations": [
-            {
-              "name": "ipconfig-trust",
-              "properties": {
-                "privateIPAllocationMethod": "Dynamic",
-                "subnet": {
-                  "id": "[variables('subnet3Ref')]"
-                }
-              }
-            }
-          ]
-        }
-      },
     {
       "apiVersion": "2016-04-30-preview",
       "type": "Microsoft.Compute/virtualMachines",
