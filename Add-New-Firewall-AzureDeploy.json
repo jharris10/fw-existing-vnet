@@ -18,7 +18,7 @@
     },
     
     "bootstrapFirewall": {
-      "type": "bool",
+      "type": "string",
       "metadata": {
         "description": "Specifies if bootstrap storage account will be used"
         }
