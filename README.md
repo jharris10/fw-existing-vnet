@@ -7,7 +7,6 @@ This template was created to support the deployment of a 3 interface Palo Alto N
                     -Load Balancer - If being used
                     -Availability Set for the Firewall
                     -VNET - with subnets
-                    -Storage Account for the firewall VHD
                     -Resource Group for Firewall
             
 
@@ -31,7 +30,6 @@ The following VMs are supported:
                     -Standard_D4
                     -Standard_D3_v2
                     -Standard_D4_v2
-                    -Standard_A4
                     -Standard_DS3_v2
                     -Standard_DS4_v2
         
