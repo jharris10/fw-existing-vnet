@@ -96,6 +96,14 @@
       },
       "defaultValue": "bundle2"
     },
+    "disktype":{
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Premium_LRS"
+      ],
+      "defaultValue": ""
+    },
     "virtualNetworkName": {
       "type": "string",
       "metadata": {
@@ -276,7 +284,7 @@
           },
           "osDisk": {
             "managedDisk": {
-              "storageAccountType": "Premium_LRS"
+              "storageAccountType": "[parameters('disktype')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
